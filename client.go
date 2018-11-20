@@ -3,7 +3,9 @@ package rpc
 import (
 	"context"
 	"io"
+	"reflect"
 	"sync"
+	"time"
 
 	stats "github.com/libp2p/go-libp2p-gorpc/stats"
 	host "github.com/libp2p/go-libp2p-host"
@@ -251,6 +253,38 @@ func (c *Client) makeCall(call *Call) {
 		call.SvcID.Name,
 		call.SvcID.Method,
 	)
+
+	sh := c.statsHandler
+	if sh != nil {
+		call.ctx = sh.TagRPC(
+			call.ctx,
+			&stats.RPCTagInfo{
+				FullMethodName: "/" + call.SvcID.Name + "/" + call.SvcID.Method,
+			},
+		)
+		beginTime := time.Now()
+		begin := &stats.Begin{
+			Client:    true,
+			BeginTime: beginTime,
+		}
+		sh.HandleRPC(call.ctx, begin)
+
+		outPayload := &stats.OutPayload{
+			Client:   true,
+			Payload:  call,
+			Length:   int(reflect.TypeOf(call.Args).Size()),
+			SentTime: beginTime,
+		}
+		sh.HandleRPC(call.ctx, outPayload)
+		defer func() {
+			end := &stats.End{
+				Client:    true,
+				BeginTime: beginTime,
+				EndTime:   time.Now(),
+			}
+			sh.HandleRPC(call.ctx, end)
+		}()
+	}
 
 	// Handle local RPC calls
 	if call.Dest == "" || c.host == nil || call.Dest == c.host.ID() {

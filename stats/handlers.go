@@ -4,6 +4,10 @@ import "context"
 
 // RPCTagInfo defines the relevant information needed by RPC context tagger.
 type RPCTagInfo struct {
+	// PeerID
+	PeerID string
+	// PeerName
+	PeerName string
 	// FullMethodName is the RPC method in the format of /package.service/method.
 	FullMethodName string
 }

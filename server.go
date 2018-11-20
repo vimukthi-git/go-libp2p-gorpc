@@ -178,7 +178,12 @@ func (server *Server) handle(s *streamWrap) error {
 
 	sh := server.statsHandler
 	if sh != nil {
-		ctx = sh.TagRPC(ctx, &stats.RPCTagInfo{FullMethodName: "/" + svcID.Name + "/" + svcID.Method})
+		ctx = sh.TagRPC(
+			ctx,
+			&stats.RPCTagInfo{
+				FullMethodName: "/" + svcID.Name + "/" + svcID.Method,
+			},
+		)
 		beginTime := time.Now()
 		begin := &stats.Begin{
 			BeginTime: beginTime,
@@ -299,7 +304,12 @@ func (server *Server) Call(call *Call) error {
 
 	sh := server.statsHandler
 	if sh != nil {
-		call.ctx = sh.TagRPC(call.ctx, &stats.RPCTagInfo{FullMethodName: "/" + call.SvcID.Name + "/" + call.SvcID.Method})
+		call.ctx = sh.TagRPC(
+			call.ctx,
+			&stats.RPCTagInfo{
+				FullMethodName: "/" + call.SvcID.Name + "/" + call.SvcID.Method,
+			},
+		)
 		beginTime := time.Now()
 		begin := &stats.Begin{
 			BeginTime: beginTime,
